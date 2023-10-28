@@ -1,4 +1,6 @@
+import { useState } from "react"
 import { Button } from "@/components/ui/button";
+import { Input } from "./components/ui/input";
 import { SignInButton, UserButton } from "@clerk/clerk-react";
 import {
   Authenticated,
@@ -9,18 +11,47 @@ import {
 import { api } from "../convex/_generated/api";
 
 export default function App() {
+  const [newTranscript, setNewTranscript] = useState("")
+  const addTranscript = useMutation(api.myFunctions.addTranscript)
+
   return (
     <main className="container max-w-2xl flex flex-col gap-8">
       <h1 className="text-4xl font-extrabold my-8 text-center">
-        Convex + React (Vite) + Clerk Auth
+        EduScribe
       </h1>
+      
       <Authenticated>
         <SignedIn />
       </Authenticated>
+
+      <div className="flex gap-2">
+          <Input
+            type="text"
+            value={newTranscript}
+            onChange={(event) => setNewTranscript(event.target.value)}
+            placeholder="Input your transcript here."
+          />
+          <Button
+            disabled={!newTranscript}
+            title={
+              newTranscript
+                ? "Save your transcript to the database"
+                : "You must enter a transcript first"
+            }
+            onClick={async () => {
+              await addTranscript({video_url: newTranscript.trim()})
+              setNewTranscript("")
+            }}
+            className="min-w-fit"
+          >
+            Input
+          </Button>
+        </div>
+
       <Unauthenticated>
         <div className="flex justify-center">
           <SignInButton mode="modal">
-            <Button>Sign in</Button>
+            <Button>Sign In</Button>
           </SignInButton>
         </div>
       </Unauthenticated>
