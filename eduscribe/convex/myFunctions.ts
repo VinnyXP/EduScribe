@@ -1,13 +1,36 @@
 import { v } from "convex/values";
-import { query, mutation, action } from "./_generated/server";
+import { query, mutation, action, ActionCtx } from "./_generated/server";
 import { api } from "./_generated/api";
-import { fetchTranscriptData } from "./myActions";
 
 // Write your Convex functions in any file inside this directory (`convex`).
 // See https://docs.convex.dev/functions for more.
 
 // You can write data to the database via a mutation:
-export const addTranscript = mutation({
+export const addVideo = mutation({
+  // Validators for arguments.
+  args: {
+    video_url: v.string(),
+    video_transcript: v.string(),
+  },
+
+  // Mutation implementation.
+  handler: async (ctx, args) => {
+    //// Insert or modify documents in the database here.
+    //// Mutations can also read from the database like queries.
+    //// See https://docs.convex.dev/database/writing-data.
+
+    //const transcript = fetchTranscriptData(ActionCtx(ctx), {videoURL: args.video_url})
+
+    const id = await ctx.db.insert("yt_videos", { video_url: args.video_url, video_transcript: args.video_transcript});
+
+
+    console.log("Added new video with id:", id);
+    // Optionally, return a value from your mutation.
+    // return id;
+  },
+});
+
+export const extractTranscript = action({
   // Validators for arguments.
   args: {
     video_url: v.string(),
@@ -19,19 +42,48 @@ export const addTranscript = mutation({
     //// Mutations can also read from the database like queries.
     //// See https://docs.convex.dev/database/writing-data.
 
-    const transcript = fetchTranscriptData(args.video_url)
+    const transcript = await ctx.runAction(api.myActions.fetchTranscriptData, {videoURL: args.video_url})
+    
+    console.log("Working!")
+    //const id = await ctx.db.query();
+    await ctx.runMutation(api.myFunctions.addVideo, {
+      video_url: args.video_url,
+      video_transcript: transcript,
+    });
 
-    const id = await ctx.db.insert("yt_videos", { video_url: args.video_url, transcript: transcript });
-
-
-    console.log("Added new document with id:", id);
+    //console.log("Added new video with id:", id);
     // Optionally, return a value from your mutation.
     // return id;
   },
 });
 
+export const showSummary = query({
+  // Validators for arguments.
+  args: {
+    video_url: v.string(),
+  },
+
+  // Mutation implementation.
+  handler: async (ctx, args) => {
+    //// Insert or modify documents in the database here.
+    //// Mutations can also read from the database like queries.
+    //// See https://docs.convex.dev/database/writing-data.
+
+    //const transcript = fetchTranscriptData(ctx, args.video_url)
+
+    //const id = await ctx.db.query();
+
+
+    //console.log("Added new video with id:", id);
+    // Optionally, return a value from your mutation.
+    // return id;
+  },
+});
+
+
+
 // You can read data from the database via a query:
-export const listNumbers = query({
+/*export const listNumbers = query({
   // Validators for arguments.
   args: {
     count: v.number(),
@@ -96,4 +148,4 @@ export const myAction = action({
       value: args.first,
     });
   },
-});
+});*/

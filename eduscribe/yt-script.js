@@ -1,15 +1,16 @@
+// ES6 / TypeScript
 import { YoutubeTranscript } from 'youtube-transcript';
 
-async function fetchTranscriptData(videoUrl) {
+async function fetchTranscriptData(video_url) {
   try {
-    const transcriptData = await YoutubeTranscript.fetchTranscript(videoUrl);
+    const transcriptData = await YoutubeTranscript.fetchTranscript(video_url);
     const transcriptText = mergeTextAndRemoveNewlines(transcriptData);
     return transcriptText;
   } catch (error) {
     console.error('Error fetching transcript:', error);
     throw error;
   }
-}
+} 
 
 function mergeTextAndRemoveNewlines(data) {
   let mergedText = '';
@@ -20,6 +21,6 @@ function mergeTextAndRemoveNewlines(data) {
   return mergedText.trim();
 }
 
+console.log(await fetchTranscriptData('x7X9w_GIm1s'))
+
 export { fetchTranscriptData }
-
-

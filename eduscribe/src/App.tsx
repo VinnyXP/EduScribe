@@ -1,65 +1,56 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button";
 import { Input } from "./components/ui/input";
-import { SignInButton, UserButton } from "@clerk/clerk-react";
 import {
-  Authenticated,
-  Unauthenticated,
   useMutation,
+  useAction,
   useQuery,
 } from "convex/react";
 import { api } from "../convex/_generated/api";
 
-export default function App() {
-  const [newTranscript, setNewTranscript] = useState("")
-  const addTranscript = useMutation(api.myFunctions.addTranscript)
 
+export default function App() {
+  const [newUrl, setNewUrl] = useState("")
+  //const addVideo = useMutation(api.myFunctions.addVideo)
+  const extractTranscript = useAction(api.myFunctions.extractTranscript)
   return (
     <main className="container max-w-2xl flex flex-col gap-8">
       <h1 className="text-4xl font-extrabold my-8 text-center">
         EduScribe
       </h1>
-      
-      <Authenticated>
-        <SignedIn />
-      </Authenticated>
-
+      <h2 className="text-center">
+        Using AI to turn watching minutes into moments
+      </h2>
       <div className="flex gap-2">
-          <Input
-            type="text"
-            value={newTranscript}
-            onChange={(event) => setNewTranscript(event.target.value)}
-            placeholder="Input your transcript here."
-          />
-          <Button
-            disabled={!newTranscript}
-            title={
-              newTranscript
-                ? "Save your transcript to the database"
-                : "You must enter a transcript first"
-            }
-            onClick={async () => {
-              await addTranscript({video_url: newTranscript.trim()})
-              setNewTranscript("")
-            }}
-            className="min-w-fit"
-          >
-            Input
-          </Button>
-        </div>
-
-      <Unauthenticated>
-        <div className="flex justify-center">
-          <SignInButton mode="modal">
-            <Button>Sign In</Button>
-          </SignInButton>
-        </div>
-      </Unauthenticated>
+        <Input
+          type="text"
+          value={newUrl}
+          onChange={(event) => setNewUrl(event.target.value)}
+          placeholder="Enter your YouTube video url here"
+        />
+        <Button
+          disabled={!newUrl}
+          title={
+            newUrl
+              ? "Save your transcript to the database"
+              : "You must enter a transcript first"
+          }
+          onClick={async () => {
+            console.log("3");
+            await extractTranscript({video_url: newUrl.trim()})
+            //await addVideo({video_url: newUrl.trim()})
+            setNewUrl("")
+          }}
+          className="min-w-fit"
+        >
+          Enter
+        </Button>
+      </div>
     </main>
   );
 }
 
-function SignedIn() {
+/*function SignedIn() {
   const { numbers, viewer } =
     useQuery(api.myFunctions.listNumbers, {
       count: 10,
@@ -118,4 +109,4 @@ function SignedIn() {
       </p>
     </>
   );
-}
+}*/
