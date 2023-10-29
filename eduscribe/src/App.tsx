@@ -42,8 +42,9 @@ export default function App() {
               : "You must enter a transcript first"
           }
           onClick={async () => {
-            await extractTranscript({video_url: newUrl.trim()});
+            const summary = await extractTranscript({video_url: newUrl.trim()});
             setNewUrl("");
+            setSummary(summary);
           }}
           className="min-w-fit"
         >

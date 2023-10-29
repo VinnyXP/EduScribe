@@ -18,7 +18,7 @@ const formatTranscript = (input: string): string => {
   else {
     transcript = input;
   }
-  const prompt = `${INSTRUCTIONS}${SAMPLE_TRANSCRIPT}\n#END TRANSCRIPT\nSummary:${SAMPLE_SUMMARY}#END SUMMARY\n${transcript}\n#END TRANSCRIPT\nSummary`;
+  const prompt = `${INSTRUCTIONS}${SAMPLE_TRANSCRIPT}\n#END TRANSCRIPT\nSummary:${SAMPLE_SUMMARY}#END SUMMARY\n${transcript}\n#END TRANSCRIPT\nSummary:`;
   return prompt;
 };
 
@@ -78,7 +78,8 @@ export const extractTranscript = action({
     //From URL -> Transcript
     const transcript = await ctx.runAction(api.myActions.fetchTranscriptData, {videoURL: args.video_url})
     //Transcript -> Manuj AI -> Analysis
-    const analysis = await ctx.runAction(api.myActions.fetchAnalysis, {prompt: formatTranscript(transcript)})
+    let analysis = ""
+    analysis = await ctx.runAction(api.myActions.fetchAnalysis, {prompt: formatTranscript(transcript)})
 
     //URL -> Regex -> ID
     const yt_id = extractYoutubeId(args.video_url)
@@ -96,8 +97,7 @@ export const extractTranscript = action({
       video_analysis: analysis
     });
     console.log("Finished!")
-    // Optionally, return a value from your mutation.
-    // return id;
+    return analysis;
   },
 });
 

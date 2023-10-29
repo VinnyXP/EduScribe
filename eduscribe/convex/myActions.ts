@@ -29,7 +29,7 @@ async function makeInferenceRequest(prompt: string) {
       model: 'crowds.errors-0v@icloud.com/llama-2-13b-2023-10-28-22-37-36',
       prompt,
       max_tokens: 128,
-      stop: '#end',
+      stop: '#END',
       temperature: 0.7,
       top_p: 0.7,
       top_k: 50,
@@ -90,7 +90,7 @@ export const uploadToVectara = action({
     data : data
     };
 
-    axios(config)
+    await axios(config)
     .then((response) => {
     console.log(JSON.stringify(response.data));
     })
