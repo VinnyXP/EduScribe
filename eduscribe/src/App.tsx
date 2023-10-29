@@ -11,7 +11,12 @@ export default function App() {
   const [summary, setSummary] = useState("")
   
   const extractTranscript = useAction(api.myFunctions.extractTranscript)
-  
+  function handleUrlChange(text) {
+    setNewUrl(text)
+    if (!text) {
+      setSummary("")
+    }
+  }
   return (
     <main className="container max-w-2xl flex flex-col gap-8">
       <h1 className="text-4xl font-extrabold my-8 text-center">
@@ -24,12 +29,11 @@ export default function App() {
         <Input
           type="text"
           value={newUrl}
-          onChange={(event) => setNewUrl(event.target.value)}
+          onChange={(event) => handleUrlChange(event.target.value)}
           placeholder="Enter your YouTube video url here"
         />
         <Textarea 
           value={summary}
-          //onChange={(event) => setSummary(event.target.value)}
           placeholder="Summary"
           style={{ marginTop: "10px" }}
           />

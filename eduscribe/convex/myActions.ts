@@ -28,7 +28,7 @@ async function makeInferenceRequest(prompt: string) {
     const data = {
       model: 'crowds.errors-0v@icloud.com/llama-2-13b-2023-10-28-22-37-36',
       prompt,
-      max_tokens: 128,
+      max_tokens: 1500,
       stop: '#END',
       temperature: 0.7,
       top_p: 0.7,
