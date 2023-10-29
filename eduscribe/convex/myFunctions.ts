@@ -18,10 +18,21 @@ const formatTranscript = (input: string): string => {
   else {
     transcript = input;
   }
-  const prompt = `${INSTRUCTIONS}${SAMPLE_TRANSCRIPT}\n#END TRANSCRIPT\nSummary:${SAMPLE_SUMMARY}#END SUMMARY\n${transcript}\n#END TRANSCRIPT\n`;
+  const prompt = `${INSTRUCTIONS}${SAMPLE_TRANSCRIPT}\n#END TRANSCRIPT\nSummary:${SAMPLE_SUMMARY}#END SUMMARY\n${transcript}\n#END TRANSCRIPT\nSummary`;
   return prompt;
 };
 
+
+function extractYoutubeId(url: string): string {
+  const pattern = /(?:https?:\/\/)?(?:youtu\.be\/|(?:www\.|m\.)?youtube\.com\/(?:watch|v|embed)(?:\.php)?(?:\?.*v=|\/))([a-zA-Z0-9_-]+)/;
+  const result = pattern.exec(url);
+
+  if (!result) {
+    return ""; // Return an empty string or any other default value you prefer
+  }
+
+  return result[1];
+}
 
 // You can write data to the database via a mutation:
 export const addVideo = mutation({
@@ -64,8 +75,16 @@ export const extractTranscript = action({
     //// Mutations can also read from the database like queries.
     //// See https://docs.convex.dev/database/writing-data.
 
+    //From URL -> Transcript
     const transcript = await ctx.runAction(api.myActions.fetchTranscriptData, {videoURL: args.video_url})
+    //Transcript -> Manuj AI -> Analysis
     const analysis = await ctx.runAction(api.myActions.fetchAnalysis, {prompt: formatTranscript(transcript)})
+
+    //URL -> Regex -> ID
+    const yt_id = extractYoutubeId(args.video_url)
+    //Sending to Banyar's DB
+    await ctx.runAction(api.myActions.uploadToVectara, {id: yt_id, summary: analysis})
+
     //convert analysis string to txt file
     //api call to upload txt file to vectara
     //purge text file (not required)

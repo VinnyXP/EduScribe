@@ -4,6 +4,10 @@ import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { YoutubeTranscript } from 'youtube-transcript';
 import axios from 'axios';
+import FormData from 'form-data'
+import fs  from 'fs';
+import path from 'path';
+import os from 'os';
 
 function mergeTextAndRemoveNewlines(data: any) {
     let mergedText = '';
@@ -40,6 +44,61 @@ async function makeInferenceRequest(prompt: string) {
       throw error;
     }
   }
+
+// Need to define get_video_title(id) if not done so already
+async function get_video_title(id: string) {
+  const url = `https://www.googleapis.com/youtube/v3/videos?id=${id}&key=AIzaSyC0NGaAvLyxdDsQfC1fDH3DcHQv3Ei_HsE&part=snippet`;
+
+  try {
+    const response = await fetch(url);
+    if (response.status === 200) {
+      const data = await response.json();
+      return data.items[0].snippet.title;
+    } else {
+      throw new Error('Failed to fetch data');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    throw error;
+  }
+}
+
+export const uploadToVectara = action({
+  args: {
+    id: v.string(), 
+    summary: v.string()
+  },
+  handler: async(_, args) => {
+      // Create a temporary file and write the string to it
+    const tempFilePath = path.join(os.tmpdir(), args.id + ".txt")
+    fs.writeFileSync(tempFilePath, args.summary);
+    let data = new FormData();
+    const url = `https://www.youtube.com/watch?v=${args.id}`
+    const title = await get_video_title(args.id)
+    data.append('doc_metadata', `{"title": "${title}", "url": "${url}"}`)
+    data.append('file', fs.createReadStream(tempFilePath)) // read the temporary file
+    let config = {
+    method: 'post',
+    maxBodyLength: Infinity,
+    url: `https://api.vectara.io/v1/upload?c=1040011825&o=3`,
+    headers: {
+        'Content-Type': 'multipart/form-data', 
+        'Accept': 'application/json', 
+        'x-api-key': "zwt_Pf1SMSG6FQ03wjwelDk8RP2hvWXBkHGKzcAOTA", 
+        ...data.getHeaders()
+    },
+    data : data
+    };
+
+    axios(config)
+    .then((response) => {
+    console.log(JSON.stringify(response.data));
+    })
+    .catch((error) => {
+    console.log(error);
+    });
+  }
+})
 
 export const fetchTranscriptData = action({
   args: {
