@@ -1,34 +1,68 @@
-import axios from "axios";
+const axios = require('axios');
+const FormData = require('form-data');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
 
-async function makeInferenceRequest(prompt) {
-  const url = 'https://api.together.xyz/inference';
-  const headers = {
-    'Authorization': 'Bearer 1de82afc6c4006d7f4651f636948c150baf842321d4d7d11538ec8f8cd056ad4',
-    'accept': 'application/json',
-    'content-type': 'application/json',
-  };
-  const data = {
-    model: 'crowds.errors-0v@icloud.com/llama-2-13b-2023-10-28-22-37-36',
-    prompt,
-    max_tokens: 128,
-    stop: '#end',
-    temperature: 0.7,
-    top_p: 0.7,
-    top_k: 50,
-    repetition_penalty: 1.3,
-  };
+
+async function get_video_title(id) {
+  const url = `https://www.googleapis.com/youtube/v3/videos?id=${id}&key=${process.env.YOUTUBE_API_KEY}&part=snippet`;
 
   try {
-    const response = await axios.post(url, data, { headers });
-    return response.data;
+    const response = await fetch(url);
+    if (response.status === 200) {
+      const data = await response.json();
+      return data.items[0].snippet.title;
+    } else {
+      throw new Error('Failed to fetch data');
+    }
   } catch (error) {
-    console.error('Error making inference request:', error);
+    console.error('Error:', error);
     throw error;
   }
 }
-async function main() {
-    const prompt = 'The capital of France is';
-    const response = await makeInferenceRequest(prompt);
-    console.log(response);
+
+// USAGE: has to be inside an aysnc function
+// const title = await get_video_title("mVKAyw0xqxw")
+
+// async function example(){
+//     const title = await get_video_title("mVKAyw0xqxw")
+//     console.log(title);
+// }
+
+// example();
+// Need to define get_video_title(id) if not done so already
+
+async function uploadToVectara(id, summary){
+    // Create a temporary file and write the string to it
+    const tempFilePath = path.join(os.tmpdir(), id + ".txt")
+    fs.writeFileSync(tempFilePath, summary);
+    let data = new FormData();
+    const url = `https://www.youtube.com/watch?v=${id}`
+    const title = await get_video_title(id)
+    data.append('doc_metadata', `{"title": "${title}", "url": "${url}"}`)
+    data.append('file', fs.createReadStream(tempFilePath)) // read the temporary file
+    let config = {
+    method: 'post',
+    maxBodyLength: Infinity,
+    url: `https://api.vectara.io/v1/upload?c=${process.env.VECTARA_ID}&o=3`,
+    headers: {
+        'Content-Type': 'multipart/form-data', 
+        'Accept': 'application/json', 
+        'x-api-key': process.env.VECTARA_API_KEY, 
+        ...data.getHeaders()
+    },
+    data : data
+    };
+
+    axios(config)
+    .then((response) => {
+    console.log(JSON.stringify(response.data));
+    })
+    .catch((error) => {
+    console.log(error);
+    });
 }
-main();
+
+// USAGE: has to be inside an aysnc function
+// uploadToVectara("mVKAyw0xqxw", "The video is about Tails OS, a free operating system designed to protect users against malware, censorship, and surveillance. It was first released in 2009 and gained popularity when Edward Snowden used it to expose the government's mass surveillance programs.  The speaker explains that most personal computers track users' movements and collect biometric data for advertising purposes. Tails OS, however, is a Debian-based Linux distro that boots from a USB stick, turning any computer into a temporarily secure machine.  The speaker emphasizes the feature of \"Amnesia\" in Tails OS, which ensures that everything done on the operating system disappears automatically when it shuts down. This is because Tails never writes anything to the hard disk and only runs from the computer's memory.  The speaker also mentions that Tails OS includes privacy-focused software like the Tor browser, which conceals the user's location, IP address, and usage. Any application that tries to access the internet without the Tor network is automatically blocked on Tails.  The video then provides a step-by-step guide on how to install and run Tails OS from a USB stick. The speaker stresses the importance of having a good connection to the Tor network for the best privacy and security.  Key takeaways from the video include the importance of privacy and security in today's digital age, the benefits of using Tails OS, and how to install and use it. The speaker also emphasizes that everything done on Tails OS is stored in random access memory and not on disk, adding an extra layer of security.");

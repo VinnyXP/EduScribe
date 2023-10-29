@@ -17,7 +17,7 @@ function mergeTextAndRemoveNewlines(data: any) {
 async function makeInferenceRequest(prompt: string) {
     const url = 'https://api.together.xyz/inference';
     const headers = {
-      'Authorization': process.env.TANUJ_KEY,
+      'Authorization': 'Bearer 1de82afc6c4006d7f4651f636948c150baf842321d4d7d11538ec8f8cd056ad4',
       'accept': 'application/json',
       'content-type': 'application/json',
     };

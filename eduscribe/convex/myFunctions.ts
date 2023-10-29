@@ -1,7 +1,6 @@
 import { v } from "convex/values";
-import { query, mutation, action, ActionCtx } from "./_generated/server";
+import { query, mutation, action } from "./_generated/server";
 import { api } from "./_generated/api";
-import { transcode } from "buffer";
 
 // Write your Convex functions in any file inside this directory (`convex`).
 // See https://docs.convex.dev/functions for more.
@@ -41,7 +40,10 @@ export const addVideo = mutation({
 
     //const transcript = fetchTranscriptData(ActionCtx(ctx), {videoURL: args.video_url})
 
-    const id = await ctx.db.insert("yt_videos", { video_url: args.video_url, video_transcript: args.video_transcript, video_analysis: args.video_analysis});
+    const id = await ctx.db.insert("yt_videos", 
+    { video_url: args.video_url, 
+      video_transcript: args.video_transcript, 
+      video_analysis: args.video_analysis});
 
 
     console.log("Added new video with id:", id);
@@ -74,35 +76,33 @@ export const extractTranscript = action({
       video_transcript: transcript,
       video_analysis: analysis
     });
-
-    //console.log("Added new video with id:", id);
+    console.log("Finished!")
     // Optionally, return a value from your mutation.
     // return id;
   },
 });
 
 export const showAnalysis = query({
-  // Validators for arguments.
   args: {
-    id: v.id("video_url")
+    // video_url: v.string()
   },
-
-  // Mutation implementation.
   handler: async (ctx, args) => {
-    //// Insert or modify documents in the database here.
-    //// Mutations can also read from the database like queries.
-    //// See https://docs.convex.dev/database/writing-data.
-
-    //const transcript = fetchTranscriptData(ctx, args.video_url)
-
-    //const id = await ctx.db.query();
-    return await ctx.db.get(args.id);
-
-    //console.log("Added new video with id:", id);
-    // Optionally, return a value from your mutation.
-    // return id;
+    console.log("Now handling showAnalysis function.")
+    console.log(ctx.db.query("yt_videos").collect())
+    return "beep"
+    // Assuming "video_url" is the field you want to use for the query.
+    // const video = await ctx.db
+    //   .query("yt_videos")
+      // .filter((q) => q.eq(q.field("video_url"), args.video_url))
+    //   .collect();
+    // console.log(video);
+    // if (!video) {
+    //   return null;
+    // }
+    // return video[0];
   },
 });
+
 
 
 

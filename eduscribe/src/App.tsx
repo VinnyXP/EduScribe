@@ -1,22 +1,17 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button";
 import { Input } from "./components/ui/input";
-import {
-  useMutation,
-  useAction,
-  useQuery,
-} from "convex/react";
+import { useAction, useQuery} from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Textarea } from "./components/ui/textarea";
-import { useUser } from "@clerk/clerk-react";
-
+//import { useUser } from "@clerk/clerk-react";
 
 export default function App() {
   const [newUrl, setNewUrl] = useState("")
   const [summary, setSummary] = useState("")
   
   const extractTranscript = useAction(api.myFunctions.extractTranscript)
-  const showAnalysis = useQuery(api.myFunctions.showAnalysis)
+  
   return (
     <main className="container max-w-2xl flex flex-col gap-8">
       <h1 className="text-4xl font-extrabold my-8 text-center">
@@ -47,10 +42,8 @@ export default function App() {
               : "You must enter a transcript first"
           }
           onClick={async () => {
-            console.log("3");
-            await extractTranscript({video_url: newUrl.trim()})
-            //await addVideo({video_url: newUrl.trim()})
-            setNewUrl("")
+            await extractTranscript({video_url: newUrl.trim()});
+            setNewUrl("");
           }}
           className="min-w-fit"
         >
