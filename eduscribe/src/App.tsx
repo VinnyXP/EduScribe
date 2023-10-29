@@ -7,27 +7,38 @@ import {
   useQuery,
 } from "convex/react";
 import { api } from "../convex/_generated/api";
+import { Textarea } from "./components/ui/textarea";
+import { useUser } from "@clerk/clerk-react";
 
 
 export default function App() {
   const [newUrl, setNewUrl] = useState("")
-  //const addVideo = useMutation(api.myFunctions.addVideo)
+  const [summary, setSummary] = useState("")
+  
   const extractTranscript = useAction(api.myFunctions.extractTranscript)
+  const showAnalysis = useQuery(api.myFunctions.showAnalysis)
   return (
     <main className="container max-w-2xl flex flex-col gap-8">
       <h1 className="text-4xl font-extrabold my-8 text-center">
         EduScribe
       </h1>
       <h2 className="text-center">
-        Using AI to turn watching minutes into moments
+        Using AI to turn watching minutes into seconds
       </h2>
-      <div className="flex gap-2">
+      <div className="flex flex-col items-center gap-2">
         <Input
           type="text"
           value={newUrl}
           onChange={(event) => setNewUrl(event.target.value)}
           placeholder="Enter your YouTube video url here"
         />
+        <Textarea 
+          value={summary}
+          //onChange={(event) => setSummary(event.target.value)}
+          placeholder="Summary"
+          style={{ marginTop: "10px" }}
+          />
+
         <Button
           disabled={!newUrl}
           title={
